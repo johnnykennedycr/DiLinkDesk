@@ -134,7 +134,7 @@ jobs:
             -o Acquire::https::Timeout=15 \
             -o Acquire::Retries=1 \
             || echo "apt update timed out; using cached package lists"
-          sudo timeout 420 apt-get install -y \
+          sudo timeout 1500 apt-get install -y \
             -o DPkg::Lock::Timeout=60 \
             clang cmake curl gcc gcc-multilib g++ g++-multilib git libc6-dev \
             libclang-dev llvm-dev nasm ninja-build openjdk-17-jdk-headless \
