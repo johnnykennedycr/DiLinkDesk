@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../common.dart';
+import '../../common/car_mode.dart';
 import '../../common/widgets/dialog.dart';
 import '../../common/widgets/login.dart';
 import '../../consts.dart';
@@ -1260,6 +1261,19 @@ class __DisplayPageState extends State<_DisplayPage> {
         centerTitle: true,
       ),
       body: SettingsList(sections: [
+        SettingsSection(
+          tiles: [
+            SettingsTile.switchTile(
+              initialValue: CarMode.isEnabled,
+              title: Text(translate('Car mode')),
+              description: Text(translate('Car mode tip')),
+              onToggle: (value) {
+                CarMode.setEnabled(value);
+                setState(() {});
+              },
+            ),
+          ],
+        ),
         SettingsSection(
           tiles: [
             _getPopupDialogRadioEntry(

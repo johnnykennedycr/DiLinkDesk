@@ -641,6 +641,20 @@ class MainActivity : FlutterActivity() {
                         }
                     }
                 }
+                GET_DEVICE_INFO -> {
+                    val metrics = resources.displayMetrics
+                    result.success(mapOf(
+                        "manufacturer" to Build.MANUFACTURER,
+                        "brand" to Build.BRAND,
+                        "model" to Build.MODEL,
+                        "device" to Build.DEVICE,
+                        "product" to Build.PRODUCT,
+                        "sdk" to Build.VERSION.SDK_INT,
+                        "width" to metrics.widthPixels,
+                        "height" to metrics.heightPixels,
+                        "density" to metrics.density
+                    ))
+                }
                 GET_VALUE -> {
                     if (call.arguments is String) {
                         if (call.arguments == KEY_IS_SUPPORT_VOICE_CALL) {

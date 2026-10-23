@@ -15,6 +15,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import '../../common.dart';
+import '../../common/car_mode.dart';
 import '../../common/widgets/overlay.dart';
 import '../../common/widgets/dialog.dart';
 import '../../common/widgets/remote_input.dart';
@@ -24,6 +25,7 @@ import '../../models/platform_model.dart';
 import '../../models/shortcut_model.dart';
 import '../../utils/image.dart';
 import '../widgets/dialog.dart';
+import '../widgets/car_keyboard.dart';
 import '../widgets/custom_scale_widget.dart';
 
 final initText = '1' * 1024;
@@ -101,6 +103,7 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
   final FocusNode _mobileFocusNode = FocusNode();
   final FocusNode _physicalFocusNode = FocusNode();
   var _showEdit = false; // use soft keyboard
+  var _showCarKeyboard = false;
 
   Worker? _waylandKeyboardGateWorker;
   bool _waylandKeyboardGateInitialized = false;
@@ -479,6 +482,21 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
     });
   }
 
+  void _toggleCarKeyboard() {
+    setState(() {
+      _showCarKeyboard = !_showCarKeyboard;
+      if (_showCarKeyboard) {
+        _showBar = false;
+        _showEdit = false;
+        gFFI.invokeMethod("enable_soft_keyboard", false);
+        _mobileFocusNode.unfocus();
+        _physicalFocusNode.requestFocus();
+      } else {
+        _showBar = true;
+      }
+    });
+  }
+
   Widget _bottomWidget() => _showGestureHelp
       ? getGestureHelp()
       : (_showBar && gFFI.ffiModel.pi.displays.isNotEmpty
@@ -489,7 +507,9 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final keyboardIsVisible =
         keyboardVisibilityController.isVisible && _showEdit;
-    final showActionButton = !_showBar || keyboardIsVisible || _showGestureHelp;
+    final showActionButton =
+        (!_showBar || keyboardIsVisible || _showGestureHelp) &&
+            !_showCarKeyboard;
 
     return WillPopScope(
       onWillPop: () async {
@@ -624,7 +644,16 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
                         setState(() => _showEdit = false);
                         showOptions(context, widget.id, gFFI.dialogManager);
                       },
-                    )
+                    ),
+                    if (CarMode.isEnabled)
+                      IconButton(
+                        color: Colors.white,
+                        icon: Icon(_showCarKeyboard
+                            ? Icons.keyboard_hide
+                            : Icons.keyboard_alt_outlined),
+                        tooltip: translate('Car keyboard'),
+                        onPressed: _toggleCarKeyboard,
+                      )
                   ] +
                   (isWebDesktop || ffiModel.viewOnly || !ffiModel.keyboard
                       ? []
@@ -763,6 +792,20 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
           } else {
             paints.add(FloatingMouseWidgets(
               ffi: gFFI,
+            ));
+          }
+          if (CarMode.isEnabled && _showCarKeyboard) {
+            paints.add(Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: CarKeyboard(
+                onHide: () => setState(() {
+                  _showCarKeyboard = false;
+                  _showBar = true;
+                }),
+                onSystemKeyboard: openKeyboard,
+              ),
             ));
           }
           return paints;
@@ -1002,10 +1045,13 @@ class _KeyHelpToolsState extends State<KeyHelpTools> {
 
   Widget wrap(String text, void Function() onPressed,
       {bool? active, IconData? icon}) {
+    final carMode = CarMode.isEnabled;
     return TextButton(
         style: TextButton.styleFrom(
           minimumSize: Size(0, 0),
-          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 9.75),
+          padding: EdgeInsets.symmetric(
+              vertical: carMode ? 14.0 : 10.0,
+              horizontal: carMode ? 16.0 : 9.75),
           //adds padding inside the button
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           //limits the touch area to the button area
@@ -1015,9 +1061,10 @@ class _KeyHelpToolsState extends State<KeyHelpTools> {
           backgroundColor: active == true ? MyTheme.accent80 : null,
         ),
         child: icon != null
-            ? Icon(icon, size: 14, color: Colors.white)
+            ? Icon(icon, size: carMode ? 22.0 : 14.0, color: Colors.white)
             : Text(translate(text),
-                style: TextStyle(color: Colors.white, fontSize: 11)),
+                style: TextStyle(
+                    color: Colors.white, fontSize: carMode ? 16.0 : 11.0)),
         onPressed: onPressed);
   }
 
@@ -1179,7 +1226,7 @@ class _KeyHelpToolsState extends State<KeyHelpTools> {
         sendPrompt(isMac, 'VK_S');
       }),
     ];
-    final space = size.width > 320 ? 4.0 : 2.0;
+    final space = CarMode.isEnabled ? 6.0 : (size.width > 320 ? 4.0 : 2.0);
     // 500 ms is long enough for this widget to be built!
     Future.delayed(Duration(milliseconds: 500), () {
       _updateRect();

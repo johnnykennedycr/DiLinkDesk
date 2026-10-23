@@ -24,6 +24,7 @@ import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'common.dart';
+import 'common/car_mode.dart';
 import 'consts.dart';
 import 'mobile/pages/home_page.dart';
 import 'mobile/pages/server_page.dart';
@@ -178,6 +179,7 @@ void runMobileApp() async {
   checkUpdate();
   if (isAndroid) androidChannelInit();
   if (isAndroid) platformFFI.syncAndroidServiceAppDirConfigPath();
+  await CarMode.init();
   draggablePositions.load();
   await Future.wait([gFFI.abModel.loadCache(), gFFI.groupModel.loadCache()]);
   gFFI.userModel.refreshCurrentUser();
@@ -518,11 +520,15 @@ class _AppState extends State<App> with WidgetsBindingObserver {
           ],
           builder: isAndroid
               ? (context, child) => AccessibilityListener(
-                    child: MediaQuery(
-                      data: MediaQuery.of(context).copyWith(
-                        textScaler: TextScaler.linear(1.0),
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: CarMode.enabled,
+                      builder: (context, carMode, _) => MediaQuery(
+                        data: MediaQuery.of(context).copyWith(
+                          textScaler: TextScaler.linear(
+                              carMode ? CarMode.textScale : 1.0),
+                        ),
+                        child: child ?? Container(),
                       ),
-                      child: child ?? Container(),
                     ),
                   )
               : (context, child) {

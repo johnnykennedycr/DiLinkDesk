@@ -4,6 +4,7 @@ import 'package:flutter_hbb/mobile/pages/settings_page.dart';
 import 'package:flutter_hbb/web/settings_page.dart';
 import 'package:get/get.dart';
 import '../../common.dart';
+import '../../common/car_mode.dart';
 import '../../common/widgets/chat_page.dart';
 import '../../models/platform_model.dart';
 import '../../models/state_model.dart';
@@ -24,7 +25,7 @@ class HomePage extends StatefulWidget {
   HomePageState createState() => HomePageState();
 }
 
-class HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   var _selectedIndex = 0;
   int get selectedIndex => _selectedIndex;
   final List<PageShape> _pages = [];
@@ -42,7 +43,23 @@ class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     initPages();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => CarMode.applySystemUi());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      CarMode.applySystemUi();
+    }
   }
 
   void initPages() {
@@ -59,6 +76,21 @@ class HomePageState extends State<HomePage> {
     _pages.add(SettingsPage());
   }
 
+  void _selectPage(int index) {
+    setState(() {
+      // close chat overlay when go chat page
+      if (_selectedIndex != index) {
+        _selectedIndex = index;
+        if (isChatPageCurrentTab) {
+          gFFI.chatModel.hideChatIconOverlay();
+          gFFI.chatModel.hideChatWindowOverlay();
+          gFFI.chatModel
+              .mobileClearClientUnread(gFFI.chatModel.currentKey.connId);
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -72,38 +104,72 @@ class HomePageState extends State<HomePage> {
           }
           return false;
         },
-        child: Scaffold(
-          // backgroundColor: MyTheme.grayBg,
-          appBar: AppBar(
-            centerTitle: true,
-            title: appTitle(),
-            actions: _pages.elementAt(_selectedIndex).appBarActions,
-          ),
-          bottomNavigationBar: BottomNavigationBar(
-            key: navigationBarKey,
-            items: _pages
-                .map((page) =>
-                    BottomNavigationBarItem(icon: page.icon, label: page.title))
-                .toList(),
-            currentIndex: _selectedIndex,
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: MyTheme.accent, //
-            unselectedItemColor: MyTheme.darkGray,
-            onTap: (index) => setState(() {
-              // close chat overlay when go chat page
-              if (_selectedIndex != index) {
-                _selectedIndex = index;
-                if (isChatPageCurrentTab) {
-                  gFFI.chatModel.hideChatIconOverlay();
-                  gFFI.chatModel.hideChatWindowOverlay();
-                  gFFI.chatModel.mobileClearClientUnread(
-                      gFFI.chatModel.currentKey.connId);
-                }
-              }
-            }),
-          ),
-          body: _pages.elementAt(_selectedIndex),
+        child: ValueListenableBuilder<bool>(
+          valueListenable: CarMode.enabled,
+          builder: (context, carMode, _) =>
+              carMode ? _buildCarScaffold() : _buildPhoneScaffold(),
         ));
+  }
+
+  Widget _buildPhoneScaffold() {
+    return Scaffold(
+      // backgroundColor: MyTheme.grayBg,
+      appBar: AppBar(
+        centerTitle: true,
+        title: appTitle(),
+        actions: _pages.elementAt(_selectedIndex).appBarActions,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        key: navigationBarKey,
+        items: _pages
+            .map((page) =>
+                BottomNavigationBarItem(icon: page.icon, label: page.title))
+            .toList(),
+        currentIndex: _selectedIndex,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: MyTheme.accent, //
+        unselectedItemColor: MyTheme.darkGray,
+        onTap: _selectPage,
+      ),
+      body: _pages.elementAt(_selectedIndex),
+    );
+  }
+
+  Widget _buildCarScaffold() {
+    final index = _selectedIndex.clamp(0, _pages.length - 1).toInt();
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 48,
+        centerTitle: false,
+        title: appTitle(),
+        actions: _pages.elementAt(index).appBarActions,
+      ),
+      body: Row(
+        children: [
+          NavigationRail(
+            selectedIndex: index,
+            minWidth: 96,
+            groupAlignment: -1,
+            labelType: NavigationRailLabelType.all,
+            indicatorColor: MyTheme.accent.withOpacity(0.25),
+            selectedIconTheme: IconThemeData(size: 32, color: MyTheme.accent),
+            unselectedIconTheme: const IconThemeData(size: 28),
+            selectedLabelTextStyle:
+                TextStyle(fontSize: 14, color: MyTheme.accent),
+            unselectedLabelTextStyle: const TextStyle(fontSize: 13),
+            onDestinationSelected: _selectPage,
+            destinations: _pages
+                .map((page) => NavigationRailDestination(
+                      icon: page.icon,
+                      label: Text(page.title),
+                    ))
+                .toList(),
+          ),
+          const VerticalDivider(width: 1),
+          Expanded(child: _pages.elementAt(index)),
+        ],
+      ),
+    );
   }
 
   Widget appTitle() {

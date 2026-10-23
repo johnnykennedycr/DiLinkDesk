@@ -815,5 +815,9 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Off", "Desativado"),
         ("api_server_connection_tip", ""),
         ("api_server_empty_tip", ""),
+        ("Car mode", "Modo carro"),
+        ("Car mode tip",
+            "Controles maiores, teclado do carro e layout para telas largas como a do DiLink"),
+        ("Car keyboard", "Teclado do carro"),
     ].iter().cloned().collect();
 }

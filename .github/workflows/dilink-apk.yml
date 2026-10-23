@@ -131,8 +131,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            clang cmake curl gcc g++ git libclang-dev llvm-dev nasm \
-            ninja-build openjdk-17-jdk-headless pkg-config tree wget unzip zip
+            clang cmake curl gcc gcc-multilib g++ g++-multilib git libc6-dev \
+            libclang-dev llvm-dev nasm ninja-build openjdk-17-jdk-headless \
+            pkg-config tree wget unzip zip
 
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
