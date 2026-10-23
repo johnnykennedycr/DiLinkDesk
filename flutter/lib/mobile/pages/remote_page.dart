@@ -131,7 +131,7 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
       forceRelay: widget.forceRelay,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (isAndroid) {
+      if (isAndroid && CarMode.isFullscreen) {
         CarMode.applySystemUi();
       } else {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
@@ -216,7 +216,7 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
     _timer?.cancel();
     _iosKeyboardWorkaroundTimer?.cancel();
     gFFI.dialogManager.dismissAll();
-    if (isAndroid) {
+    if (isAndroid && CarMode.isFullscreen) {
       await CarMode.applySystemUi();
     } else {
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
@@ -293,7 +293,7 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
 
   void onSoftKeyboardChanged(bool visible) {
     if (!visible) {
-      if (isAndroid) {
+      if (isAndroid && CarMode.isFullscreen) {
         CarMode.applySystemUi();
       } else {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
