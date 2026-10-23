@@ -1272,6 +1272,15 @@ class __DisplayPageState extends State<_DisplayPage> {
                 setState(() {});
               },
             ),
+            SettingsTile.switchTile(
+              initialValue: CarMode.isFullscreen,
+              title: Text(translate('Fullscreen')),
+              description: Text(translate('Hide the top and bottom bars')),
+              onToggle: (value) {
+                CarMode.setFullscreen(value);
+                setState(() {});
+              },
+            ),
           ],
         ),
         SettingsSection(

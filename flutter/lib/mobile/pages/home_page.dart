@@ -46,7 +46,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     initPages();
     WidgetsBinding.instance
-        .addPostFrameCallback((_) => CarMode.applySystemUi());
+        .addPostFrameCallback((_) => CarMode.applyAll());
   }
 
   @override
@@ -58,7 +58,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      CarMode.applySystemUi();
+      CarMode.applyAll();
     }
   }
 

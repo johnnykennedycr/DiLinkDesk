@@ -818,5 +818,6 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Car mode", ""),
         ("Car mode tip", ""),
         ("Car keyboard", ""),
+        ("Hide the top and bottom bars", ""),
     ].iter().cloned().collect();
 }

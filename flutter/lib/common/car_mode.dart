@@ -11,16 +11,19 @@ class CarMode {
   CarMode._();
 
   static const optionKey = 'dilink-car-mode';
+  static const fullscreenOptionKey = 'dilink-fullscreen';
   static const double textScale = 1.1;
 
   static final ValueNotifier<bool> enabled = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> detected = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> fullscreen = ValueNotifier<bool>(true);
 
   static final UniqueKey wakelockKey = UniqueKey();
 
   static bool get isEnabled => enabled.value;
+  static bool get isFullscreen => fullscreen.value;
 
-  /// Reads the persisted option and auto-detects the head unit on first run.
+  /// Reads the persisted options and auto-detects the head unit on first run.
   static Future<void> init() async {
     if (!isAndroid) return;
     final stored = bind.mainGetLocalOption(key: optionKey);
@@ -30,43 +33,57 @@ class CarMode {
       if (look) {
         enabled.value = true;
         await bind.mainSetLocalOption(key: optionKey, value: 'Y');
-        await applySystemUi();
       }
-      return;
+    } else {
+      enabled.value = stored == 'Y';
     }
-    enabled.value = stored == 'Y';
-    if (enabled.value) {
-      await applySystemUi();
-    }
+    final storedFullscreen = bind.mainGetLocalOption(key: fullscreenOptionKey);
+    fullscreen.value =
+        storedFullscreen.isEmpty ? enabled.value : storedFullscreen == 'Y';
+    await applyAll();
   }
 
   static Future<void> setEnabled(bool value) async {
     if (enabled.value == value) return;
     enabled.value = value;
     await bind.mainSetLocalOption(key: optionKey, value: value ? 'Y' : 'N');
-    if (value) {
-      await applySystemUi();
-    } else {
-      await restoreSystemUi();
-    }
+    applyWakelock();
   }
 
-  /// Immersive fullscreen plus keep-screen-on while car mode is active.
+  static Future<void> setFullscreen(bool value) async {
+    if (fullscreen.value == value) return;
+    fullscreen.value = value;
+    await bind.mainSetLocalOption(
+        key: fullscreenOptionKey, value: value ? 'Y' : 'N');
+    await applySystemUi();
+  }
+
+  static Future<void> applyAll() async {
+    await applySystemUi();
+    applyWakelock();
+  }
+
+  /// Hides the DiLink status and navigation bars when fullscreen is enabled.
   static Future<void> applySystemUi() async {
-    if (!isAndroid || !enabled.value) return;
+    if (!isAndroid) return;
     try {
-      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      if (fullscreen.value) {
+        await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      } else {
+        await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+            overlays: SystemUiOverlay.values);
+      }
     } catch (_) {}
-    WakelockManager.enable(wakelockKey, isServer: true);
   }
 
-  static Future<void> restoreSystemUi() async {
+  /// Keeps the screen on while car mode is active.
+  static void applyWakelock() {
     if (!isAndroid) return;
-    WakelockManager.disable(wakelockKey);
-    try {
-      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-          overlays: SystemUiOverlay.values);
-    } catch (_) {}
+    if (enabled.value) {
+      WakelockManager.enable(wakelockKey, isServer: true);
+    } else {
+      WakelockManager.disable(wakelockKey);
+    }
   }
 
   static Future<bool> _deviceLooksLikeDiLink() async {

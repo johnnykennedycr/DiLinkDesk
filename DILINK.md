@@ -31,7 +31,9 @@ O APK mais recente é publicado em:
 
 O modo carro é ativado automaticamente quando o aparelho se identifica como
 BYD/DiLink (`Build.MANUFACTURER`, `BRAND` ou `MODEL`). Também pode ser ligado e
-desligado em **Configurações → Configurações de exibição → Modo carro**.
+desligado em **Configurações → Configurações de exibição → Modo carro**. Na
+mesma tela, a opção **Tela cheia** esconde as barras superior e inferior do
+DiLink e vem ligada por padrão.
 
 Com o modo carro ligado:
 
@@ -40,8 +42,12 @@ Com o modo carro ligado:
 - texto e teclas de ajuda maiores;
 - **teclado do carro**: painel QWERTY embutido na sessão, com Ctrl, Alt, Shift,
   Win, setas, Enter, Backspace, Tab e Esc, sem depender do teclado do sistema;
-- tela cheia imersiva e tela sempre ligada;
+- tela sempre ligada;
 - sessão segue em paisagem (o manifesto já força `sensorLandscape`).
+
+Com **Tela cheia** ligada, as barras superior e inferior do DiLink ficam
+escondidas em todas as telas do app e só reaparecem temporariamente ao deslizar
+a partir da borda. Desligue a opção para mostrá-las novamente.
 
 O botão de teclado na barra da sessão abre o teclado do carro. O botão de
 teclado dentro do painel abre o teclado do Android para acentos e IME.

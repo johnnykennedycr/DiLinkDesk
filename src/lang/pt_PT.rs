@@ -819,5 +819,6 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Car mode tip",
             "Controlos maiores, teclado do carro e disposição para ecrãs largos como o do DiLink"),
         ("Car keyboard", "Teclado do carro"),
+        ("Hide the top and bottom bars", "Oculta as barras superior e inferior"),
     ].iter().cloned().collect();
 }
