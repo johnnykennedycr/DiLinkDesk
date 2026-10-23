@@ -60,3 +60,8 @@ flutter/web/
 /third_party/libdrmtap/
 # Local git worktrees
 .worktrees/
+
+# DiLinkDesk signing material (CI injects these)
+flutter/android/key.properties
+flutter/android/app/*.p12
+flutter/android/app/*.jks

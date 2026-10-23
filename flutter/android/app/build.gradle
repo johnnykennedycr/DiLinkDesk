@@ -98,10 +98,12 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.carriez.flutter_hbb"
+        // DiLinkDesk: separate package so it can coexist with official RustDesk and
+        // receive updates signed by our own stable key.
+        applicationId "com.dilinkdesk.rustdesk"
         minSdkVersion 22
-        targetSdkVersion 36
+        // BYD DiLink package installers (Android 10) reject targetSdk > 33.
+        targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -112,6 +114,7 @@ android {
         keyPassword keystoreProperties['keyPassword']
         storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
         storePassword keystoreProperties['storePassword']
+        storeType keystoreProperties['storeType'] ?: 'PKCS12'
       }
     }
 
