@@ -148,7 +148,7 @@ class _CarKeyboardState extends State<CarKeyboard> {
                 _key('Alt', flex: 4, active: input.alt, onTap: _toggleAlt),
                 _key('Shift',
                     flex: 5, active: input.shift, onTap: _toggleShift),
-                for (final char in _digits)
+                for (final char in _digits.split(''))
                   _key(char, flex: 10, onTap: () => _char(char)),
                 _key('', flex: 5, icon: Icons.backspace_outlined, onTap: () {
                   _send('VK_BACK');
@@ -157,7 +157,7 @@ class _CarKeyboardState extends State<CarKeyboard> {
             ),
             Row(
               children: [
-                for (final char in _row1)
+                for (final char in _row1.split(''))
                   _key(_shift ? char.toUpperCase() : char,
                       flex: 10, onTap: () => _char(char)),
                 _key('[', flex: 6, onTap: () => _char('[')),
@@ -168,7 +168,7 @@ class _CarKeyboardState extends State<CarKeyboard> {
             ),
             Row(
               children: [
-                for (final char in _row2)
+                for (final char in _row2.split(''))
                   _key(_shift ? char.toUpperCase() : char,
                       flex: 10, onTap: () => _char(char)),
                 _key(';', flex: 6, onTap: () => _char(';')),
@@ -185,7 +185,7 @@ class _CarKeyboardState extends State<CarKeyboard> {
             ),
             Row(
               children: [
-                for (final char in _row3)
+                for (final char in _row3.split(''))
                   _key(_shift ? char.toUpperCase() : char,
                       flex: 10, onTap: () => _char(char)),
                 _key(',', flex: 6, onTap: () => _char(',')),

@@ -106,8 +106,9 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         },
         child: ValueListenableBuilder<bool>(
           valueListenable: CarMode.enabled,
-          builder: (context, carMode, _) =>
-              carMode ? _buildCarScaffold() : _buildPhoneScaffold(),
+          builder: (context, carMode, _) => carMode && _pages.length > 1
+              ? _buildCarScaffold()
+              : _buildPhoneScaffold(),
         ));
   }
 

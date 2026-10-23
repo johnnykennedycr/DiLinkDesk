@@ -804,7 +804,10 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
                   _showCarKeyboard = false;
                   _showBar = true;
                 }),
-                onSystemKeyboard: openKeyboard,
+                onSystemKeyboard: () {
+                  setState(() => _showCarKeyboard = false);
+                  openKeyboard();
+                },
               ),
             ));
           }
