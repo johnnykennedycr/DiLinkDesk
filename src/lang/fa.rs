@@ -817,5 +817,13 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Car mode tip", ""),
         ("Car keyboard", ""),
         ("Hide the top and bottom bars", ""),
+        ("Access this screen from a PC", ""),
+        ("Share this screen and control it from the RustDesk app on your PC.", ""),
+        ("Sharing is off", ""),
+        ("Waiting for screen capture permission", ""),
+        ("Remote control is on", ""),
+        ("Enable remote control", ""),
+        ("On the PC, open RustDesk, enter the ID and password, then connect.", ""),
+        ("Use a permanent password to connect without reading a new one-time password on the car screen.", ""),
     ].iter().cloned().collect();
 }

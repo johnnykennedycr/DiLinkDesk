@@ -820,5 +820,16 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
             "Controlos maiores, teclado do carro e disposição para ecrãs largos como o do DiLink"),
         ("Car keyboard", "Teclado do carro"),
         ("Hide the top and bottom bars", "Oculta as barras superior e inferior"),
+        ("Access this screen from a PC", "Aceder a esta multimídia a partir do PC"),
+        ("Share this screen and control it from the RustDesk app on your PC.",
+            "Partilhe este ecrã e controle-o a partir da aplicação RustDesk no PC."),
+        ("Sharing is off", "Partilha desligada"),
+        ("Waiting for screen capture permission", "A aguardar permissão de captura do ecrã"),
+        ("Remote control is on", "Controlo remoto ativado"),
+        ("Enable remote control", "Ativar controlo remoto"),
+        ("On the PC, open RustDesk, enter the ID and password, then connect.",
+            "No PC, abra o RustDesk, introduza o ID e a palavra-passe e ligue-se."),
+        ("Use a permanent password to connect without reading a new one-time password on the car screen.",
+            "Use uma palavra-passe permanente para ligar sem ler uma nova palavra-passe de utilização única no ecrã do carro."),
     ].iter().cloned().collect();
 }

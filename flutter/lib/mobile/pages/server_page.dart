@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import '../../common.dart';
+import '../../common/car_mode.dart';
 import '../../common/widgets/dialog.dart';
 import '../../consts.dart';
 import '../../models/platform_model.dart';
@@ -210,9 +211,11 @@ class _ServerPageState extends State<ServerPage> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         buildPresetPasswordWarningMobile(),
-                        gFFI.serverModel.isStart
-                            ? ServerInfo()
-                            : ServiceNotRunningNotification(),
+                        const CarHostPanel(),
+                        if (!CarMode.isEnabled)
+                          (gFFI.serverModel.isStart
+                              ? ServerInfo()
+                              : ServiceNotRunningNotification()),
                         const ConnectionManager(),
                         const PermissionChecker(),
                         SizedBox.fromSize(size: const Size(0, 15.0)),
@@ -259,6 +262,218 @@ class ServiceNotRunningNotification extends StatelessWidget {
                 label: Text(translate("Start service")))
           ],
         ));
+  }
+}
+
+/// Host controls for the car head unit.
+///
+/// The DiLink is often controlled from a PC while parked, so the ID, password
+/// and the two permissions that matter are kept together with large targets.
+class CarHostPanel extends StatelessWidget {
+  const CarHostPanel({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+        valueListenable: CarMode.enabled,
+        builder: (context, carMode, _) {
+          if (!carMode) return const SizedBox.shrink();
+          final serverModel = Provider.of<ServerModel>(context);
+          final showOneTime = serverModel.approveMode != 'click' &&
+              serverModel.verificationMethod != kUsePermanentPassword;
+          return PaddingCard(
+              title: translate('Access this screen from a PC'),
+              titleIcon: const Icon(Icons.computer, color: MyTheme.accent),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      translate(
+                          'Share this screen and control it from the RustDesk app on your PC.'),
+                      style: const TextStyle(
+                          fontSize: 14, color: MyTheme.darkGray),
+                    ),
+                    const SizedBox(height: 10),
+                    _hostStatus(serverModel),
+                    if (serverModel.isStart) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                              child: _credential(translate('ID'),
+                                  serverModel.serverId.value.text)),
+                          const SizedBox(width: 24),
+                          Expanded(
+                              child: _credential(
+                                  translate(showOneTime
+                                      ? 'One-time Password'
+                                      : 'Password'),
+                                  showOneTime
+                                      ? serverModel.serverPasswd.value.text
+                                      : '-')),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [
+                          SizedBox(
+                            width: 300,
+                            height: 52,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red),
+                              onPressed: serverModel.toggleService,
+                              icon: const Icon(Icons.stop),
+                              label: Text(translate('Stop service')),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 52,
+                            child: OutlinedButton.icon(
+                              onPressed: () => setPasswordDialog(),
+                              icon: const Icon(Icons.key),
+                              label: Text(translate('Set permanent password')),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        translate(
+                            'Use a permanent password to connect without reading a new one-time password on the car screen.'),
+                        style: const TextStyle(
+                            fontSize: 13, color: MyTheme.darkGray),
+                      ),
+                    ] else ...[
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: 300,
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            if (gFFI.userModel.userName.value.isEmpty &&
+                                bind.mainGetLocalOption(
+                                        key: "show-scam-warning") !=
+                                    "N") {
+                              showScamWarning(context, serverModel);
+                            } else {
+                              serverModel.toggleService();
+                            }
+                          },
+                          icon: const Icon(Icons.play_arrow),
+                          label: Text(translate('Start service')),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    serverModel.inputOk
+                        ? _statusLine(Icons.check_circle, Colors.green,
+                            'Remote control is on')
+                        : SizedBox(
+                            height: 52,
+                            child: OutlinedButton.icon(
+                              onPressed: serverModel.toggleInput,
+                              icon: const Icon(Icons.touch_app),
+                              label: Text(translate('Enable remote control')),
+                            ),
+                          ),
+                    if (serverModel.isStart && serverModel.mediaOk) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          const Icon(Icons.computer,
+                              size: 22, color: MyTheme.darkGray),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              translate(
+                                  'On the PC, open RustDesk, enter the ID and password, then connect.'),
+                              style: const TextStyle(
+                                  fontSize: 15, color: MyTheme.darkGray),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ]));
+        });
+  }
+
+  Widget _hostStatus(ServerModel serverModel) {
+    if (!serverModel.isStart) {
+      return _statusLine(Icons.info_outline, Colors.grey, 'Sharing is off');
+    }
+    if (!serverModel.mediaOk) {
+      return _statusLine(Icons.hourglass_top, Colors.orange,
+          'Waiting for screen capture permission');
+    }
+    if (serverModel.connectStatus == 0) {
+      return _statusLine(
+          Icons.sync, Colors.orange, 'connecting_status');
+    }
+    if (serverModel.connectStatus < 0) {
+      return _statusLine(
+          Icons.error_outline, Colors.red, 'not_ready_status');
+    }
+    return _statusLine(Icons.check_circle, Colors.green, 'Ready');
+  }
+
+  Widget _statusLine(IconData icon, Color color, String text) {
+    return Row(children: [
+      Icon(icon, color: color, size: 24),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Text(
+          translate(text),
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w600, color: color),
+        ),
+      ),
+    ]);
+  }
+
+  Widget _credential(String label, String value) {
+    final text = value.trim();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: MyTheme.darkGray),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                text.isEmpty ? '-' : text,
+                style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: MyTheme.idColor),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              iconSize: 26,
+              onPressed: text.isEmpty || text == '-'
+                  ? null
+                  : () {
+                      Clipboard.setData(ClipboardData(text: text));
+                      showToast(translate('Copied'));
+                    },
+              icon: const Icon(Icons.copy_outlined),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }
 

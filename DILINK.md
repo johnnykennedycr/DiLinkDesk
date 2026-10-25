@@ -2,7 +2,8 @@
 
 Fork do [RustDesk](https://github.com/rustdesk/rustdesk) Android ajustado para o
 BYD Dolphin GS (DiLink 3.0, Android 10, arm64). O carro entra como **cliente**
-para controlar o PC, não como host.
+para controlar o PC e também como **host**, para o PC acessar a multimídia do
+carro.
 
 ## Download
 
@@ -51,6 +52,51 @@ a partir da borda. Desligue a opção para mostrá-las novamente.
 
 O botão de teclado na barra da sessão abre o teclado do carro. O botão de
 teclado dentro do painel abre o teclado do Android para acentos e IME.
+
+## Acessar a multimídia do carro pelo PC
+
+O DiLinkDesk também funciona como **host**: com o compartilhamento ativo, o PC
+abre o RustDesk, conecta ao ID do carro e controla a tela e o toque da
+multimídia.
+
+1. No carro, abra a aba **Compartilhar Tela** e toque em **Iniciar serviço**.
+   Autorize a captura de tela no aviso do Android.
+2. Toque em **Ativar controle remoto** e habilite o **RustDesk Input** em
+   Acessibilidade. Sem esse serviço o PC vê a tela, mas não consegue tocar.
+3. Anote o **ID** e a **senha** mostrados no cartão **Acessar esta multimídia pelo PC**.
+4. No PC, abra o RustDesk, digite o ID do carro, clique em **Conectar** e informe
+   a senha.
+5. Durante a sessão, para abrir a tela inicial do DiLink a partir do PC, use o
+   **botão do meio** do mouse; mantenha pressionado para abrir os recentes. O
+   **botão direito** equivale a **Voltar**.
+
+O compartilhamento continua com o app em segundo plano (notificação
+"RustDesk Service"), então dá para abrir o rádio ou o player de vídeo no carro
+enquanto o PC controla. Para encerrar, volte ao app e toque em **Parar serviço**.
+
+O áudio do carro pode ser compartilhado em **Permissões → Captura de áudio**
+(Android 10 ou superior). Apps protegidos por DRM podem aparecer pretos; é uma
+restrição do sistema.
+
+### Senha permanente
+
+A senha de uso único muda a cada início do serviço. Para não precisar voltar ao
+carro para lê-la, toque em **Configurar senha permanente** no cartão e defina uma
+senha fixa. Depois use essa senha no PC. A senha permanente fica salva apenas no
+carro.
+
+### Se a tela de acessibilidade não abrir
+
+Alguns firmwares do DiLink escondem a tela de acessibilidade. Com ADB habilitado
+no carro, ative o serviço manualmente:
+
+```
+adb shell settings put secure enabled_accessibility_services com.dilinkdesk.rustdesk/com.carriez.flutter_hbb.InputService
+adb shell settings put secure accessibility_enabled 1
+```
+
+O comando substitui a lista de serviços de acessibilidade ativos; use apenas se
+não houver outros serviços configurados.
 
 ## Build
 
