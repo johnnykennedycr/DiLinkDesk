@@ -66,9 +66,10 @@ multimídia.
 3. Anote o **ID** e a **senha** mostrados no cartão **Acessar esta multimídia pelo PC**.
 4. No PC, abra o RustDesk, digite o ID do carro, clique em **Conectar** e informe
    a senha.
-5. Durante a sessão, para abrir a tela inicial do DiLink a partir do PC, use o
-   **botão do meio** do mouse; mantenha pressionado para abrir os recentes. O
-   **botão direito** equivale a **Voltar**.
+5. Durante a sessão, no PC: o **botão do meio** do mouse abre a tela inicial do
+   DiLink e, mantido pressionado, abre os recentes. O **botão lateral de voltar**
+   (botão 4) aciona **Voltar**. O **botão direito** faz uma pressão longa no
+   ponto do cursor.
 
 O compartilhamento continua com o app em segundo plano (notificação
 "RustDesk Service"), então dá para abrir o rádio ou o player de vídeo no carro
